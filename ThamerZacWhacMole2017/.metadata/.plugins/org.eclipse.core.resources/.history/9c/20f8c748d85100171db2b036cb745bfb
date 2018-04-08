@@ -1,0 +1,915 @@
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+ 
+public class WMBoard extends JPanel implements KeyListener
+ 
+{
+ 
+	private boolean runAgain = true;
+	public final int max = 100;
+	public int[] randomNumbers = new int[max];// makes 20 randomNumbers 
+ 
+	private int totalRounds = -2;// total turns, everytime a circle gets colored
+	private int score = 0;
+	boolean square1 = false;
+	boolean square2 = false;
+	boolean square3 = false;
+	boolean square4 = false;
+	boolean square5 = false;
+	boolean square6 = false;
+	boolean square7 = false;
+	boolean square8 = false;
+	boolean square9 = false;
+ 
+	int counter = 1;
+	boolean scored = false;
+ 
+	int round = 0;
+ 
+	int highlightedCircle = -1;
+ 
+ 
+	private boolean soundPlaying = true;
+ 
+	public boolean correct = false;
+ 
+	Color colorG, colorB, color1, color2, color3, color4, color5, color6,
+	color7, color8, color9;
+ 
+	public MyTimer timer;
+	public int turnTime = 2500;
+ 
+	public JFrame restart;
+	public JFrame gameOver;
+	public JFrame start;
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+	// Constructor
+	public WMBoard()
+	{
+		setFocusable(true);
+		// Register for mouse events on the panel
+		addKeyListener(this);
+ 
+ 
+		runAgain = true;
+ 
+		randomNumbers = new int[max];// makes 20 randomNumbers 
+ 
+		totalRounds = -2;// total turns, everytime a circle gets colored
+		score = 0;
+		square1 = false;
+		square2 = false;
+		square3 = false;
+		square4 = false;
+		square5 = false;
+		square6 = false;
+		square7 = false;
+		square8 = false;
+		square9 = false;
+ 
+		counter = 1;
+		scored = false;
+ 
+		round = 0;
+ 
+		highlightedCircle = -1;
+ 
+ 
+		soundPlaying = true;
+ 
+		correct = false;
+ 
+		turnTime = 2500;
+ 
+ 
+	}
+ 
+ 
+ 
+	public void init() throws InterruptedException
+	{
+ 
+		// launch game
+		setrandomNumber();
+ 
+		JFrame frame = new JFrame("Sample Frame");
+ 
+		frame.add(this);
+ 
+		frame.setTitle("Whac - A - Mole");
+ 
+ 
+		JOptionPane.showMessageDialog(start, "Use the 9 num pad on the right side of the keyboard to whack the moles and use S to toggle the music");
+ 
+ 
+ 
+		if (WhacMole.easy == true)
+ 
+			turnTime = 800;
+ 
+		if (WhacMole.med == true)
+ 
+			turnTime = 500;
+ 
+		if (WhacMole.hard == true)
+ 
+			turnTime = 400;
+ 
+		timer = new MyTimer(turnTime);
+ 
+		timer.start();
+ 
+		try
+ 
+		{
+			playMusicMain();
+		}
+ 
+		catch (Exception err)
+		{
+			//System.out.println("2. " + err);
+		}
+ 
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		round = 0;
+		centerWindow();
+		frame.setSize(400, 400);
+		setColors();
+ 
+		// runs the mainLoop
+		ActionListener timerAction = new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				MainLoop();
+ 
+			}
+ 
+		};
+ 
+		// Frame rate, updates the frame every 15ms --- 60fps
+		Timer timer = new Timer(15, timerAction);
+		timer.setRepeats(true);
+		timer.start();
+ 
+ 
+	}
+ 
+	public void MainLoop() // throws InterruptedException
+ 
+	{
+		// System.out.println("WMBoard MainLoop");
+ 
+		// amount of circles that get dark
+ 
+		if (round < max && runAgain)
+		{
+			if (timer.isExpired())
+			{
+				timer.start();
+				setColors();
+				boardTurn(round);
+				round++;
+			}
+			repaint();
+		}
+ 
+	}
+ 
+	public class AL implements ActionListener
+	{
+ 
+ 
+		public final void actionPerformed(ActionEvent e)
+		{
+ 
+			if (soundPlaying)
+			{
+				Sound.audioClip.stop();
+				soundPlaying = false;
+			}
+			else
+			{
+				Sound.audioClip.start();
+				soundPlaying = true;
+			}
+		}
+	}
+ 
+	public void playInGameMusic() throws InterruptedException
+
+	{
+		Sound.play("IngameMusic.wav");
+
+	}
+
+	public void playMusicMain() throws InterruptedException
+
+	{
+		playInGameMusic();
+	}
+
+	public void playSoundEffect() throws InterruptedException
+
+	{
+		Sound.play("SMACK Sound Effect.wav");
+	}
+
+
+ 
+	public void playSound() throws InterruptedException
+ 
+	{
+		playSoundEffect();
+	}
+ 
+	// Centers the window
+ 
+	public void centerWindow()
+ 
+	{
+		// gets top level window
+ 
+		Window window;
+		Container c = getParent();
+		while (c.getParent() != null)
+			c = c.getParent();
+ 
+		// center window
+ 
+		if (c instanceof Window)// if it is the top window...
+		{
+			// centers it
+			window = (Window) c;
+			window.pack();
+			window.setLocationRelativeTo(null);
+		}
+	}
+ 
+	public void setColors()
+ 
+	{
+		// set initial colors
+		colorG = Color.green;
+		colorB = Color.blue;
+		color1 = Color.orange.darker();
+		color2 = Color.orange.darker();
+		color3 = Color.orange.darker();
+		color4 = Color.orange.darker();
+		color5 = Color.orange.darker();
+		color6 = Color.orange.darker();
+		color7 = Color.orange.darker();
+		color8 = Color.orange.darker();
+		color9 = Color.orange.darker();
+		square1 = false;
+		square2 = false;
+		square3 = false;
+		square4 = false;
+		square5 = false;
+		square6 = false;
+		square7 = false;
+		square8 = false;
+		square9 = false;
+		totalRounds++;
+ 
+	}
+ 
+	public void rounds()
+ 
+	{
+		runAgain = true;
+ 
+	}
+ 
+	// Puts 20 random numbers in the array
+ 
+	public void setrandomNumber()
+ 
+	{
+		int randomNumber = (int) (Math.random() * 9 + 1);
+		randomNumbers[0] = randomNumber;
+		for (int i = 1; i < max; i++)
+		{
+			while (randomNumber == randomNumbers[i - 1])
+			{
+				randomNumber = (int) (Math.random() * 9 + 1);
+				randomNumbers[i] = randomNumber;
+			}
+			// System.out.print(randomNumbers[i]);
+ 
+		}
+ 
+		// randomNumbers[0] = 1;//TEST
+		// System.out.println(randomNumbers[0]);
+ 
+	}
+	// returns true if next turn
+	public void boardTurn(int round)
+ 
+	{
+		if (randomNumbers[round] == 1) {
+			square1 = true;
+ 
+		}
+		if (randomNumbers[round] == 2) {
+			square2 = true;
+		}
+		if (randomNumbers[round] == 3) {
+			square3 = true;
+		}
+		if (randomNumbers[round] == 4) {
+			square4 = true;
+		}
+		if (randomNumbers[round] == 5) {
+			square5 = true;
+		}
+		if (randomNumbers[round] == 6) {
+			square6 = true;
+		}
+		if (randomNumbers[round] == 7) {
+			square7 = true;
+		}
+		if (randomNumbers[round] == 8) {
+			square8 = true;
+		}
+		if (randomNumbers[round] == 9) {
+			square9 = true;
+		}
+		scored = false;
+ 
+ 
+		if (round==max-1)
+		{
+			if (soundPlaying)
+			{
+				Sound.audioClip.stop();
+				soundPlaying = false;
+			}
+			else
+			{
+				Sound.audioClip.start();
+				soundPlaying = true;
+			}
+			/*
+			Object[] options = {"Restart", "Quit"};
+			int n = JOptionPane.showOptionDialog(gameOver,
+				    "Game Over\n Score: " + score, "Game Over", JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,options,options[1]);
+			 */
+			JOptionPane.showMessageDialog(gameOver,
+					"Click the X and then hit F11 to RESTART or Click the X in the top right to QUIT\n Your Percentage:\t " + score + "%");
+		}
+	}
+ 
+	// public void paint(Graphics page)
+ 
+	@Override
+	protected void paintComponent(Graphics page)
+	{
+		// System.out.println("WMBoard PaintComponent");
+ 
+		super.paintComponent(page);
+ 
+		// frame.setBackground(Color.blue);
+ 
+		int length = 200;
+		int width = 100;
+ 
+		
+		page.setColor(colorG);
+		page.fillRect(0, 0, length, width);
+		page.setColor(color1);
+		page.fillOval(12, 35, 75, 35);
+ 
+		page.setColor(colorG);
+		page.fillRect(130, 0, length, width);
+		page.setColor(color2);
+		page.fillOval(142, 35, 75, 35); //+30
+ 
+		page.setColor(colorG);
+		page.fillRect(240, 0, length, width);
+		page.setColor(color3);
+		page.fillOval(262, 35, 75, 35); //+50
+ 
+		page.setColor(colorG);
+		page.fillRect(0, 100, length, width);
+		page.setColor(color4);
+		page.fillOval(12, 135, 75, 35);
+ 
+		page.setColor(colorG);
+		page.fillRect(140, 100, length, width);
+		page.setColor(color5);
+		page.fillOval(142, 135, 75, 35);
+ 
+		page.setColor(colorG);
+		page.fillRect(230, 100, length, width);
+		page.setColor(color6);
+		page.fillOval(262, 135, 75, 35);
+ 
+		page.setColor(colorG);
+		page.fillRect(0, 200, length, width);
+		page.setColor(color7);
+		page.fillOval(12, 235, 75, 35);
+ 
+		page.setColor(colorG);
+		page.fillRect(130, 200, length, width);
+		page.setColor(color8);
+		page.fillOval(142, 235, 75, 35);
+ 
+		page.setColor(colorG);
+		page.fillRect(230, 200, length, width);
+		page.setColor(color9);
+		page.fillOval(262, 235, 75, 35);
+ 
+		page.setColor(Color.black);
+		//Font font = new Font("", 0, 20);
+		page.setFont(new Font("Comic Sans MS", Font.PLAIN, 50));
+	//	 Font font = page.getFont().deriveFont( 50.0f );
+	//	 page.setFont(font);
+		page.drawString("SCORE: ", 75, 350);
+		page.drawString(Integer.toString(score), 275, 350);
+ 
+		// 1
+		// body
+		if (square1) 
+		{
+			page.setColor(Color.orange.darker());
+			page.fillOval(32, 10, 40, 60);
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(47, 41, 5, 10);
+			page.fillRect(53, 41, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(45, 34, 7, 7);
+			page.drawOval(52, 34, 7, 7);
+			page.fillOval(48, 29, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(42, 20, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(42, 20, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(43, 23, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(57, 20, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(57, 20, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(58, 23, 4, 4);
+			color1 = Color.black;
+		}
+ 
+		if (square2) 
+		{
+			// 2
+			// body
+			page.setColor(Color.orange.darker());
+			page.fillOval(62 + 100, 10, 40, 60);
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(77 + 100, 41, 5, 10);
+			page.fillRect(83 + 100, 41, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(75 + 100, 34, 7, 7);
+			page.drawOval(82 + 100, 34, 7, 7);
+			page.fillOval(78 + 100, 29, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(72 + 100, 20, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(72 + 100, 20, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(73 + 100, 23, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(87 + 100, 20, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(87 + 100, 20, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(88 + 100, 23, 4, 4);
+			color2 = Color.black;
+		}
+ 
+		if (square3)
+		{
+			// 3
+			// body
+			page.setColor(Color.orange.darker());
+			page.fillOval(82 + 200, 10, 40, 60);
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(97 + 200, 41, 5, 10);
+			page.fillRect(103 + 200, 41, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(95 + 200, 34, 7, 7);
+			page.drawOval(102 + 200, 34, 7, 7);
+			page.fillOval(98 + 200, 29, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(92 + 200, 20, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(92 + 200, 20, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(93 + 200, 23, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(107 + 200, 20, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(107 + 200, 20, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(108 + 200, 23, 4, 4);
+			color3 = Color.black;
+		}
+ 
+		if (square4)
+		{
+			// 4
+			// body
+			page.setColor(Color.orange.darker());
+			page.fillOval(32, 10 + 100, 40, 60);
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(47, 41 + 100, 5, 10);
+			page.fillRect(53, 41 + 100, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(45, 34 + 100, 7, 7);
+			page.drawOval(52, 34 + 100, 7, 7);
+			page.fillOval(48, 29 + 100, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(42, 20 + 100, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(42, 20 + 100, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(43, 23 + 100, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(57, 20 + 100, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(57, 20 + 100, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(58, 23 + 100, 4, 4);
+			color4 = Color.black;
+		}
+ 
+		if (square5) 
+		{
+			// 5
+			// body
+			page.setColor(Color.orange.darker());
+			page.fillOval(62 + 100, 10 + 100, 40, 60);
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(77 + 100, 41 + 100, 5, 10);
+			page.fillRect(83 + 100, 41 + 100, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(75 + 100, 34 + 100, 7, 7);
+			page.drawOval(82 + 100, 34 + 100, 7, 7);
+			page.fillOval(78 + 100, 29 + 100, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(72 + 100, 20 + 100, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(72 + 100, 20 + 100, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(73 + 100, 23 + 100, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(87 + 100, 20 + 100, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(87 + 100, 20 + 100, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(88 + 100, 23 + 100, 4, 4);
+			color5 = Color.black;
+		}
+ 
+		if (square6) 
+		{
+			// 6
+			// body
+			page.setColor(Color.orange.darker());
+			page.fillOval(82 + 200, 10 + 100, 40, 60);// 42 -18
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(97 + 200, 41 + 100, 5, 10);
+			page.fillRect(103 + 200, 41 + 100, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(95 + 200, 34 + 100, 7, 7);
+			page.drawOval(102 + 200, 34 + 100, 7, 7);
+			page.fillOval(98 + 200, 29 + 100, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(92 + 200, 20 + 100, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(92 + 200, 20 + 100, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(93 + 200, 23 + 100, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(107 + 200, 20 + 100, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(107 + 200, 20 + 100, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(108 + 200, 23 + 100, 4, 4);
+			color6 = Color.black;
+		}
+ 
+		if (square7) 
+		{
+			// 7
+			// body
+			page.setColor(Color.orange.darker());
+			page.fillOval(32, 10 + 200, 40, 60);// 42 -18
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(47, 41 + 200, 5, 10);
+			page.fillRect(53, 41 + 200, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(45, 34 + 200, 7, 7);
+			page.drawOval(52, 34 + 200, 7, 7);
+			page.fillOval(48, 29 + 200, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(42, 20 + 200, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(42, 20 + 200, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(43, 23 + 200, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(57, 20 + 200, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(57, 20 + 200, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(58, 23 + 200, 4, 4);
+			color7 = Color.black;
+		}
+ 
+		if (square8) 
+		{
+			// 8
+			// body
+			page.setColor(Color.orange.darker());
+			page.fillOval(62 + 100, 10 + 200, 40, 60);// 42 -18
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(77 + 100, 41 + 200, 5, 10);
+			page.fillRect(83 + 100, 41 + 200, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(75 + 100, 34 + 200, 7, 7);
+			page.drawOval(82 + 100, 34 + 200, 7, 7);
+			page.fillOval(78 + 100, 29 + 200, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(72 + 100, 20 + 200, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(72 + 100, 20 + 200, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(73 + 100, 23 + 200, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(87 + 100, 20 + 200, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(87 + 100, 20 + 200, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(88 + 100, 23 + 200, 4, 4);
+			color8 = Color.black;
+		}
+ 
+		if (square9) 
+		{
+			// 9
+			// body
+			page.setColor(Color.orange.darker());
+			page.fillOval(82 + 200, 10 + 200, 40, 60);// 42 -18
+			// teeth
+			page.setColor(Color.white);
+			page.fillRect(97 + 200, 41 + 200, 5, 10);
+			page.fillRect(103 + 200, 41 + 200, 5, 10);
+			// nose
+			page.setColor(Color.black);
+			page.drawOval(95 + 200, 34 + 200, 7, 7);
+			page.drawOval(102 + 200, 34 + 200, 7, 7);
+			page.fillOval(98 + 200, 29 + 200, 9, 9);
+			// eyes
+			// left eye
+			page.setColor(Color.black);
+			page.drawOval(92 + 200, 20 + 200, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(92 + 200, 20 + 200, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(93 + 200, 23 + 200, 4, 4);
+			// right eye
+			page.setColor(Color.black);
+			page.drawOval(107 + 200, 20 + 200, 6, 10);
+			page.setColor(Color.white);
+			page.fillOval(107 + 200, 20 + 200, 6, 10);
+			page.setColor(Color.black);
+			page.fillOval(108 + 200, 23 + 200, 4, 4);
+			color9 = Color.black;
+		}
+		   
+ 
+	}
+ 
+	public int getScore()
+	{
+		return score;
+	}
+ 
+	public boolean isDark(int rn, int square) 
+	{
+		//	System.out.println("is Dark is called");
+		boolean dark = false;
+		if (randomNumbers[rn] == square && !scored)
+		{
+			counter++;
+			dark = true;
+			//	System.out.println("is dark");
+		}
+ 
+		return dark;
+	}
+ 
+ 
+ 
+	public void keyPressed(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		int c = arg0.getKeyCode();
+		if (c == KeyEvent.VK_NUMPAD7) {
+			if (isDark(totalRounds, 1)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+		if (c == KeyEvent.VK_NUMPAD8) {
+			if (isDark(totalRounds, 2)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+		if (c == KeyEvent.VK_NUMPAD9) {
+			if (isDark(totalRounds, 3)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+		if (c == KeyEvent.VK_NUMPAD4) {
+			if (isDark(totalRounds, 4)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+		if (c == KeyEvent.VK_NUMPAD5) {
+			if (isDark(totalRounds, 5)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+		if (c == KeyEvent.VK_NUMPAD6) {
+			if (isDark(totalRounds, 6)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+		if (c == KeyEvent.VK_NUMPAD1) {
+			if (isDark(totalRounds, 7)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+		if (c == KeyEvent.VK_NUMPAD2) {
+			if (isDark(totalRounds, 8)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+		if (c == KeyEvent.VK_NUMPAD3) {
+			if (isDark(totalRounds, 9)) {
+				score++;
+				scored = true;
+				try {
+					playSound();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+ 
+ 
+		if (c == KeyEvent.VK_S) {
+			if (soundPlaying)
+			{
+				Sound.audioClip.stop();
+				soundPlaying = false;
+			}
+			else
+			{
+				Sound.audioClip.start();
+				soundPlaying = true;
+			}
+		}
+	}
+ 
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+ 
+	}
+ 
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+ 
+	}
+ 
+	public void update(Graphics g) 
+	{
+		paint(g);
+	}
+}
